@@ -234,6 +234,8 @@ EOS
       end
     end
 
+    private
+
     def build_dir(platform)
       @build_dir ||= begin
         path = "build-#{platform}"
