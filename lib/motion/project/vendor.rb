@@ -215,10 +215,12 @@ EOS
 
         # Generate the bridgesupport file if we need to.
         bs_file = bridgesupport_build_path(build_dir)
-        headers_dir = opts.delete(:headers_dir)
-        if headers_dir
+        headers_dirs = opts.delete(:headers_dirs)
+        headers_dirs = [headers_dirs] unless headers_dirs.kind_of? Array 
+        if headers_dirs.length > 0
           project_dir = File.expand_path(@config.project_dir)
-          headers = Dir.glob(File.join(project_dir, headers_dir, '**{,/*/**}/*.h'))
+          headers = headers_dirs.collect { |d| Dir.glob(File.join(project_dir, d, '**/*.h')) }.flatten
+
           if !File.exist?(bs_file) or headers.any? { |x| File.mtime(x) > File.mtime(bs_file) }
             FileUtils.mkdir_p File.dirname(bs_file)
             bs_cflags = (opts.delete(:bridgesupport_cflags) or opts.delete(:cflags) or '')
@@ -231,8 +233,6 @@ EOS
         @libs = Dir.glob("#{build_dir}/*.a").map { |x| File.expand_path(x) }
       end
     end
-
-    private
 
     def build_dir(platform)
       @build_dir ||= begin
